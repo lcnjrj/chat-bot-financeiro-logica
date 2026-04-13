@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finanças Autônomo IA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto p-4 max-w-4xl">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white p-4 rounded-lg shadow border-l-4 border-green-500">
+                <p class="text-sm text-gray-500">Receita Total</p>
+                <p class="text-2xl font-bold">R$ {{ receita }}</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow border-l-4 border-red-500">
+                <p class="text-sm text-gray-500">Despesas</p>
+                <p class="text-2xl font-bold">R$ {{ despesa }}</p>
+            </div>
+            <div class="p-4 rounded-lg shadow border-l-4 {{ 'bg-yellow-100 border-yellow-500' if percentual <= 22 else 'bg-white border-blue-500' }}">
+                <p class="text-sm text-gray-500">Zona de Reserva</p>
+                <p class="text-2xl font-bold">{{ "%.1f"|format(percentual) }}%</p>
+                {% if percentual <= 22 %}<span class="text-xs text-red-600 font-bold">ZONA CRÍTICA ATIVADA</span>{% endif %}
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-lg font-bold mb-4">Nova Transação</h2>
+                <div class="space-y-4">
+                    <input id="desc" type="text" placeholder="Descrição (ex: Cliente X, Aluguel)" class="w-full p-2 border rounded">
+                    <input id="valor" type="number" placeholder="Valor R$" class="w-full p-2 border rounded">
+                    <select id="tipo" class="w-full p-2 border rounded">
+                        <option value="receita">Receita</option>
+                        <option value="despesa">Despesa</option>
+                    </select>
+                    <select id="cat" class="w-full p-2 border rounded">
+                        <option value="essencial">Essencial</option>
+                        <option value="superfluo">Supérfluo</option>
+                    </select>
+                    <button onclick="addTransacao()" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Lançar</button>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow flex flex-col h-[400px]">
+                <h2 class="text-lg font-bold mb-4">Assistente IA</h2>
+                <div id="chat-box" class="flex-grow overflow-y-auto mb-4 text-sm space-y-2 p-2 bg-gray-50 rounded">
+                    <p class="text-gray-600 italic">Olá! Como posso ajudar sua gestão hoje?</p>
+                </div>
+                <div class="flex gap-2">
+                    <input id="chat-in" type="text" placeholder="Pergunte sobre seu saldo..." class="flex-grow p-2 border rounded">
+                    <button onclick="perguntarIA()" class="bg-green-600 text-white px-4 py-2 rounded">Enviar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function addTransacao() {
+            const data = {
+                descricao: document.getElementById('desc').value,
+                valor: parseFloat(document.getElementById('valor').value),
+                tipo: document.getElementById('tipo').value,
+                categoria: document.getElementById('cat').value
+            };
+            await fetch('/add_transacao', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            location.reload();
+        }
+
+        async function perguntarIA() {
+            const input = document.getElementById('chat-in');
+            const box = document.getElementById('chat-box');
+            const msg = input.value;
+            input.value = '';
+
+            box.innerHTML += `<p><b>Você:</b> ${msg}</p>`;
+
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({mensagem: msg})
+            });
+            const data = await response.json();
+            box.innerHTML += `<p class="text-blue-700"><b>IA:</b> ${data.resposta}</p>`;
+            box.scrollTop = box.scrollHeight;
+        }
+    </script>
+</body>
+</html>

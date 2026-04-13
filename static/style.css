@@ -1,0 +1,19 @@
+/* Custom Scrollbar para o Chat */
+#chat-box::-webkit-scrollbar {
+width: 4px;
+}
+#chat-box::-webkit-scrollbar-thumb {
+background: #cbd5e0;
+border-radius: 10px;
+}
+
+/* Animação para Zona Crítica */
+.bg-yellow-100 {
+    animation: pulse-bg 2s infinite;
+}
+
+@keyframes pulse-bg {
+    0% { background-color: #fef3c7; }
+    50% { background-color: #fde68a; }
+    100% { background-color: #fef3c7; }
+}
